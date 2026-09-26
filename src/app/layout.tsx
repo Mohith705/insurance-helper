@@ -36,14 +36,14 @@ export default function RootLayout({
                 <ShieldCheck className="h-8 w-8 text-blue-600" />
                 <span className="font-bold text-xl text-slate-800 tracking-tight">InsureCRM</span>
               </div>
-              <nav className="flex items-center space-x-4">
-                <Link href="/" className="flex items-center space-x-1 text-slate-600 hover:text-blue-600 font-medium transition-colors px-3 py-2 rounded-md hover:bg-slate-50">
-                  <Users className="h-4 w-4" />
-                  <span>Dashboard</span>
+              <nav className="flex items-center space-x-2 sm:space-x-4">
+                <Link href="/" className="flex items-center space-x-1 sm:space-x-2 text-slate-600 hover:text-blue-600 font-medium transition-colors px-2 sm:px-3 py-2 rounded-md hover:bg-slate-50">
+                  <Users className="h-5 w-5 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Dashboard</span>
                 </Link>
-                <Link href="/add-user" className="flex items-center space-x-1 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors px-4 py-2 rounded-lg shadow-sm">
-                  <UserPlus className="h-4 w-4" />
-                  <span>Add Client</span>
+                <Link href="/add-user" className="flex items-center space-x-1 sm:space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors px-3 sm:px-4 py-2 rounded-lg shadow-sm">
+                  <UserPlus className="h-5 w-5 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Add Client</span>
                 </Link>
               </nav>
             </div>

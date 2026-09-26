@@ -9,7 +9,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
   const [search, setSearch] = useState('')
   const [companyFilter, setCompanyFilter] = useState('All')
   const [selectedUser, setSelectedUser] = useState<InsuranceUser | null>(null)
-  
+
   // Modal State
   const [passwordInput, setPasswordInput] = useState('')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -57,25 +57,25 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Clients Dashboard</h1>
-        
-        <div className="flex items-center space-x-3">
-          <div className="relative">
+
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-            <input 
-              type="text" 
-              placeholder="Search clients..." 
+            <input
+              type="text"
+              placeholder="Search clients..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none w-64"
+              className="pl-9 pr-4 py-2.5 sm:py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none w-full"
             />
           </div>
-          
-          <div className="relative">
+
+          <div className="relative w-full sm:w-auto">
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
             <select
               value={companyFilter}
               onChange={(e) => setCompanyFilter(e.target.value)}
-              className="pl-9 pr-8 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none appearance-none bg-white"
+              className="pl-9 pr-8 py-2.5 sm:py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none appearance-none bg-white w-full sm:w-auto"
             >
               {companies.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -84,7 +84,53 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile View: Cards */}
+        <div className="block md:hidden divide-y divide-slate-200">
+          {filteredUsers.length === 0 ? (
+            <div className="p-8 text-center text-slate-500">No users found.</div>
+          ) : (
+            filteredUsers.map(user => (
+              <div key={user.id} className="p-5 hover:bg-slate-50 transition-colors">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="font-bold text-slate-800 text-lg leading-tight">{user.first_name} {user.last_name}</h3>
+                    <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-2">
+                      {user.insurance_company}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => openModal(user)}
+                    className="text-blue-600 hover:text-blue-800 font-medium flex items-center bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <Eye className="w-4 h-4 mr-1.5" />
+                    <span className="text-sm">View</span>
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
+                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <p className="text-slate-500 text-[11px] uppercase tracking-wider font-semibold mb-1">Policy</p>
+                    <p className="font-medium text-slate-700">{user.policy_name}</p>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <p className="text-slate-500 text-[11px] uppercase tracking-wider font-semibold mb-1">Amount</p>
+                    <p className="font-medium text-slate-700">${user.amount}</p>
+                  </div>
+                  <div className="col-span-2 bg-amber-50 rounded-lg p-3 border border-amber-100 flex items-center justify-between">
+                    <div>
+                      <p className="text-amber-700/80 text-[11px] uppercase tracking-wider font-bold mb-1">Next Installment</p>
+                      <p className="font-bold text-amber-900 text-base">
+                        {user.next_installment_date ? format(new Date(user.next_installment_date), 'MMM d, yyyy') : '-'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-sm font-medium text-slate-500 uppercase tracking-wider">
@@ -92,7 +138,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                 <th className="p-4">Company</th>
                 <th className="p-4">Policy</th>
                 <th className="p-4">Amount</th>
-                <th className="p-4 hidden md:table-cell">Prev. Installment</th>
+                <th className="p-4 hidden lg:table-cell">Prev. Installment</th>
                 <th className="p-4">Next Installment</th>
                 <th className="p-4">Action</th>
               </tr>
@@ -117,21 +163,21 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                     </td>
                     <td className="p-4 text-slate-600">{user.policy_name}</td>
                     <td className="p-4 font-medium text-slate-800">${user.amount}</td>
-                    <td className="p-4 text-slate-500 hidden md:table-cell">
+                    <td className="p-4 text-slate-500 hidden lg:table-cell">
                       {user.previous_installment_date ? format(new Date(user.previous_installment_date), 'MMM d, yyyy') : '-'}
                     </td>
                     <td className="p-4">
-                      <span className="text-amber-700 font-medium bg-amber-50 px-2 py-1 rounded">
+                      <span className="text-amber-700 font-medium bg-amber-50 px-2.5 py-1 rounded-md border border-amber-100">
                         {user.next_installment_date ? format(new Date(user.next_installment_date), 'MMM d, yyyy') : '-'}
                       </span>
                     </td>
                     <td className="p-4">
-                      <button 
+                      <button
                         onClick={() => openModal(user)}
-                        className="text-blue-600 hover:text-blue-800 font-medium flex items-center space-x-1"
+                        className="text-blue-600 hover:text-blue-800 font-medium flex items-center space-x-1 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
                       >
                         <Eye className="w-4 h-4" />
-                        <span>View User</span>
+                        <span>View</span>
                       </button>
                     </td>
                   </tr>
@@ -146,7 +192,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
       {selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            
+
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
               <h2 className="text-xl font-bold text-slate-800 flex items-center">
@@ -164,7 +210,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
 
             {/* Modal Body */}
             <div className="p-6 overflow-y-auto">
-              
+
               {/* Basic Info always visible in Modal */}
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div>
@@ -192,7 +238,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                   <Lock className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-slate-800 mb-2">Confidential Data Protected</h3>
                   <p className="text-slate-500 mb-6 text-sm">Please enter the security password to view sensitive client information like SSN, Policy Number, and Contact Details.</p>
-                  
+
                   <form onSubmit={handleAuth} className="max-w-xs mx-auto">
                     <input
                       type="password"
