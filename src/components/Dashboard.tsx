@@ -2,8 +2,9 @@
 
 import { useState, useMemo } from 'react'
 import { InsuranceUser } from '@/types'
-import { Search, Filter, Lock, Unlock, Eye, X } from 'lucide-react'
+import { Search, Filter, Lock, Unlock, Eye, X, Trash2, AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
+import { deleteInsuranceUser } from '@/app/actions'
 
 export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUser[] }) {
   const [search, setSearch] = useState('')
@@ -53,6 +54,40 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
     }
   }
 
+  // Delete Modal State
+  const [userToDelete, setUserToDelete] = useState<InsuranceUser | null>(null)
+  const [deletePasswordInput, setDeletePasswordInput] = useState('')
+  const [deletePasswordError, setDeletePasswordError] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const openDeleteModal = (user: InsuranceUser) => {
+    setUserToDelete(user)
+    setDeletePasswordInput('')
+    setDeletePasswordError(false)
+  }
+
+  const closeDeleteModal = () => {
+    setUserToDelete(null)
+  }
+
+  const handleDeleteAuth = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (deletePasswordInput === 'delete123' && userToDelete) {
+      setIsDeleting(true)
+      setDeletePasswordError(false)
+      try {
+        await deleteInsuranceUser(userToDelete.id)
+        closeDeleteModal()
+      } catch (error) {
+        console.error("Failed to delete user", error)
+      } finally {
+        setIsDeleting(false)
+      }
+    } else {
+      setDeletePasswordError(true)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -98,13 +133,22 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                       {user.insurance_company}
                     </span>
                   </div>
-                  <button
-                    onClick={() => openModal(user)}
-                    className="text-blue-600 hover:text-blue-800 font-medium flex items-center bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
-                  >
-                    <Eye className="w-4 h-4 mr-1.5" />
-                    <span className="text-sm">View</span>
-                  </button>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => openModal(user)}
+                      className="text-blue-600 hover:text-blue-800 font-medium flex items-center bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      <Eye className="w-4 h-4 mr-1.5" />
+                      <span className="text-sm">View</span>
+                    </button>
+                    <button
+                      onClick={() => openDeleteModal(user)}
+                      className="text-red-600 hover:text-red-800 font-medium flex items-center bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors"
+                      title="Delete Client"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
                   <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
@@ -127,20 +171,18 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
               </div>
             ))
           )}
-        </div>
-
-        {/* Desktop View: Table */}
+        </div>        {/* Desktop View: Table */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-sm font-medium text-slate-500 uppercase tracking-wider">
-                <th className="p-4">Name</th>
-                <th className="p-4">Company</th>
-                <th className="p-4">Policy</th>
-                <th className="p-4">Amount</th>
-                <th className="p-4 hidden lg:table-cell">Prev. Installment</th>
-                <th className="p-4">Next Installment</th>
-                <th className="p-4">Action</th>
+                <th className="px-3 py-4 whitespace-nowrap">Name</th>
+                <th className="px-3 py-4 whitespace-nowrap">Company</th>
+                <th className="px-3 py-4">Policy</th>
+                <th className="px-3 py-4 whitespace-nowrap">Amount</th>
+                <th className="px-3 py-4 whitespace-nowrap hidden lg:table-cell">Prev. Installment</th>
+                <th className="px-3 py-4 whitespace-nowrap">Next Installment</th>
+                <th className="px-3 py-4 whitespace-nowrap">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
@@ -153,32 +195,41 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
               ) : (
                 filteredUsers.map(user => (
                   <tr key={user.id} className="hover:bg-slate-50 transition-colors group">
-                    <td className="p-4 font-medium text-slate-800">
+                    <td className="px-3 py-4 font-medium text-slate-800 whitespace-nowrap">
                       {user.first_name} {user.last_name}
                     </td>
-                    <td className="p-4 text-slate-600">
+                    <td className="px-3 py-4 text-slate-600 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         {user.insurance_company}
                       </span>
                     </td>
-                    <td className="p-4 text-slate-600">{user.policy_name}</td>
-                    <td className="p-4 font-medium text-slate-800">₹{user.amount}</td>
-                    <td className="p-4 text-slate-500 hidden lg:table-cell">
+                    <td className="px-3 py-4 text-slate-600 min-w-[150px]">{user.policy_name}</td>
+                    <td className="px-3 py-4 font-medium text-slate-800 whitespace-nowrap">₹{user.amount}</td>
+                    <td className="px-3 py-4 text-slate-500 hidden lg:table-cell whitespace-nowrap">
                       {user.previous_installment_date ? format(new Date(user.previous_installment_date), 'MMM d, yyyy') : '-'}
                     </td>
-                    <td className="p-4">
+                    <td className="px-3 py-4 whitespace-nowrap">
                       <span className="text-amber-700 font-medium bg-amber-50 px-2.5 py-1 rounded-md border border-amber-100">
                         {user.next_installment_date ? format(new Date(user.next_installment_date), 'MMM d, yyyy') : '-'}
                       </span>
                     </td>
-                    <td className="p-4">
-                      <button
-                        onClick={() => openModal(user)}
-                        className="text-blue-600 hover:text-blue-800 font-medium flex items-center space-x-1 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
-                      >
-                        <Eye className="w-4 h-4" />
-                        <span>View</span>
-                      </button>
+                    <td className="px-3 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => openModal(user)}
+                          className="text-blue-600 hover:text-blue-800 font-medium flex items-center space-x-1 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          <Eye className="w-4 h-4" />
+                          <span>View</span>
+                        </button>
+                        <button
+                          onClick={() => openDeleteModal(user)}
+                          className="text-red-600 hover:text-red-800 font-medium flex items-center bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors"
+                          title="Delete Client"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -288,6 +339,50 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Modal */}
+      {userToDelete && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-red-100 flex justify-between items-center bg-red-50">
+              <h2 className="text-xl font-bold text-red-700 flex items-center">
+                <AlertTriangle className="w-5 h-5 mr-2" />
+                Delete Client
+              </h2>
+              <button onClick={closeDeleteModal} className="text-red-400 hover:text-red-600">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <p className="text-slate-600 mb-6 text-center">
+                Are you sure you want to delete <span className="font-bold text-slate-800">{userToDelete.first_name} {userToDelete.last_name}</span>? This action cannot be undone.
+              </p>
+
+              <form onSubmit={handleDeleteAuth} className="max-w-xs mx-auto">
+                <input
+                  type="password"
+                  placeholder="Enter delete password..."
+                  value={deletePasswordInput}
+                  onChange={(e) => setDeletePasswordInput(e.target.value)}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg mb-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
+                  required
+                />
+                {deletePasswordError && (
+                  <p className="text-red-500 text-sm mb-3 text-center">Incorrect password.</p>
+                )}
+                <button
+                  type="submit"
+                  disabled={isDeleting}
+                  className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-medium py-2 rounded-lg transition-colors flex justify-center items-center shadow-sm"
+                >
+                  {isDeleting ? 'Deleting...' : 'Permanently Delete'}
+                </button>
+              </form>
             </div>
           </div>
         </div>

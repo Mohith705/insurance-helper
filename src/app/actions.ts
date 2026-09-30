@@ -50,3 +50,19 @@ export async function addInsuranceUser(formData: FormData) {
   revalidatePath('/')
   redirect('/')
 }
+
+export async function deleteInsuranceUser(id: string) {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('insurance_users')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error deleting user:', error)
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/')
+}
