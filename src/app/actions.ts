@@ -26,10 +26,24 @@ export async function addInsuranceUser(formData: FormData) {
     notes: formData.get('notes') as string,
   }
 
+  // Check for duplicate policy number
+  const { data: existingUser } = await supabase
+    .from('insurance_users')
+    .select('id')
+    .eq('policy_number', data.policy_number)
+    .single()
+
+  if (existingUser) {
+    throw new Error('A client with this Policy Number already exists in the system.')
+  }
+
   const { error } = await supabase.from('insurance_users').insert([data])
 
   if (error) {
     console.error('Error adding user:', error)
+    if (error.code === '23505') {
+      throw new Error('A client with this Policy Number already exists in the system.')
+    }
     throw new Error(error.message)
   }
 

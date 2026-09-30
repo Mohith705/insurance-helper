@@ -28,7 +28,7 @@ export default function AddUserPage() {
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <form action={handleSubmit} className="p-8 space-y-8">
-          
+
           {error && (
             <div className="bg-red-50 text-red-600 p-4 rounded-xl flex items-center space-x-2">
               <AlertCircle className="w-5 h-5" />
@@ -104,7 +104,7 @@ export default function AddUserPage() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Installment Amount ($)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Installment Amount (₹)</label>
                 <input required name="amount" type="number" step="0.01" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="150.00" />
               </div>
               <div>

@@ -19,7 +19,7 @@ create table public.insurance_users (
   payment_frequency text check (payment_frequency in ('Monthly', 'Quarterly', 'Yearly')) not null,
   
   -- Confidential Info (Gated behind password)
-  policy_number text not null,
+  policy_number text not null unique,
   ssn_or_id text,
   phone_number text,
   email text,

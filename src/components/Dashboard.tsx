@@ -113,7 +113,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                   </div>
                   <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
                     <p className="text-slate-500 text-[11px] uppercase tracking-wider font-semibold mb-1">Amount</p>
-                    <p className="font-medium text-slate-700">${user.amount}</p>
+                    <p className="font-medium text-slate-700">₹{user.amount}</p>
                   </div>
                   <div className="col-span-2 bg-amber-50 rounded-lg p-3 border border-amber-100 flex items-center justify-between">
                     <div>
@@ -162,7 +162,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                       </span>
                     </td>
                     <td className="p-4 text-slate-600">{user.policy_name}</td>
-                    <td className="p-4 font-medium text-slate-800">${user.amount}</td>
+                    <td className="p-4 font-medium text-slate-800">₹{user.amount}</td>
                     <td className="p-4 text-slate-500 hidden lg:table-cell">
                       {user.previous_installment_date ? format(new Date(user.previous_installment_date), 'MMM d, yyyy') : '-'}
                     </td>
@@ -223,7 +223,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                 </div>
                 <div>
                   <p className="text-sm text-slate-500">Installment Amount</p>
-                  <p className="font-medium text-slate-800">${selectedUser.amount} ({selectedUser.payment_frequency})</p>
+                  <p className="font-medium text-slate-800">₹{selectedUser.amount} ({selectedUser.payment_frequency})</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-500">Next Payment</p>
