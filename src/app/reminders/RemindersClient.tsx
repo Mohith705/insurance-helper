@@ -1,0 +1,141 @@
+'use client'
+
+import { useState } from 'react'
+import { InsuranceUser } from '@/types'
+import { differenceInDays, format } from 'date-fns'
+import { updatePaymentStatus } from '../actions'
+import { CheckCircle2, Clock, AlertCircle } from 'lucide-react'
+import Link from 'next/link'
+
+export default function RemindersClient({ users }: { users: InsuranceUser[] }) {
+  const [activeUsers, setActiveUsers] = useState<InsuranceUser[]>(users)
+  const [loadingId, setLoadingId] = useState<string | null>(null)
+
+  const handlePaymentComplete = async (userId: string) => {
+    setLoadingId(userId)
+    // Optimistic UI: remove from list immediately
+    setActiveUsers(prev => prev.filter(u => u.id !== userId))
+    
+    try {
+      await updatePaymentStatus(userId, true)
+    } catch (error) {
+      console.error("Failed to update payment status", error)
+      // Revert if failed
+      setActiveUsers(users)
+    } finally {
+      setLoadingId(null)
+    }
+  }
+
+  const generateWhatsAppLink = (user: InsuranceUser, days: number) => {
+    const note = `Automatic Reminder: ${days} days until next premium of ₹${user.amount}`
+    const msg = `Hello ${user.first_name},\n\nThis is a reminder from Secure Solutions Insurance.\n\n${note}\n\nPolicy: ${user.policy_name} (${user.policy_number})\nDue Date: ${user.next_installment_date ? format(new Date(user.next_installment_date), 'MMM d, yyyy') : 'N/A'}\nPremium Amount: ₹${user.amount}\n\nPlease ignore if already paid.`
+    const phone = user.phone_number?.replace(/\D/g, '') || ''
+    return `https://wa.me/91${phone.slice(-10)}?text=${encodeURIComponent(msg)}`
+  }
+
+  // Categorize users based on days remaining
+  const categorized = activeUsers.reduce((acc, user) => {
+    if (!user.next_installment_date) return acc
+    
+    const daysRemaining = differenceInDays(new Date(user.next_installment_date), new Date())
+    
+    if (daysRemaining < 0) {
+      acc.overdue.push({ user, daysRemaining })
+    } else if (daysRemaining <= 10) {
+      acc.tenDays.push({ user, daysRemaining })
+    } else if (daysRemaining <= 20) {
+      acc.twentyDays.push({ user, daysRemaining })
+    } else if (daysRemaining <= 30) {
+      acc.thirtyDays.push({ user, daysRemaining })
+    }
+    return acc
+  }, {
+    overdue: [] as { user: InsuranceUser, daysRemaining: number }[],
+    tenDays: [] as { user: InsuranceUser, daysRemaining: number }[],
+    twentyDays: [] as { user: InsuranceUser, daysRemaining: number }[],
+    thirtyDays: [] as { user: InsuranceUser, daysRemaining: number }[]
+  })
+
+  const renderSection = (title: string, items: { user: InsuranceUser, daysRemaining: number }[], badgeColor: string, icon: React.ReactNode, daysRef: number) => {
+    if (items.length === 0) return null
+
+    return (
+      <div className="mb-8 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+        <div className={`px-6 py-4 border-b border-slate-100 flex items-center justify-between ${badgeColor}`}>
+          <h2 className="text-lg font-semibold flex items-center text-slate-800">
+            {icon}
+            <span className="ml-2">{title}</span>
+            <span className="ml-3 bg-white/50 text-slate-700 text-xs font-bold px-2 py-0.5 rounded-full">{items.length}</span>
+          </h2>
+        </div>
+        <div className="divide-y divide-slate-100">
+          {items.map(({ user, daysRemaining }) => (
+            <div key={user.id} className="p-6 flex flex-col md:flex-row md:items-center justify-between hover:bg-slate-50 transition-colors">
+              <div className="mb-4 md:mb-0">
+                <Link href={`/edit-user/${user.id}`} className="text-lg font-semibold text-slate-800 hover:text-blue-600 transition-colors">
+                  {user.first_name} {user.last_name}
+                </Link>
+                <div className="text-sm text-slate-500 mt-1 flex flex-wrap items-center gap-2">
+                  <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600">{user.policy_name}</span>
+                  <span>•</span>
+                  <span className="font-medium text-slate-700">₹{user.amount}</span>
+                  <span>•</span>
+                  <span>Due: {format(new Date(user.next_installment_date), 'MMM d, yyyy')}</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-3 shrink-0">
+                <a
+                  href={generateWhatsAppLink(user, daysRef)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center"
+                >
+                  WhatsApp
+                </a>
+                <button
+                  onClick={() => handlePaymentComplete(user.id)}
+                  disabled={loadingId === user.id}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center disabled:opacity-50"
+                >
+                  <CheckCircle2 className="w-4 h-4 mr-1.5" />
+                  {loadingId === user.id ? 'Saving...' : 'Mark Paid'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const totalActionable = categorized.overdue.length + categorized.tenDays.length + categorized.twentyDays.length + categorized.thirtyDays.length
+
+  return (
+    <div>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-slate-800 flex items-center">
+          <Clock className="w-6 h-6 mr-2 text-blue-600" />
+          Reminders Inbox
+        </h1>
+        <p className="text-slate-600 mt-1">Manage upcoming premiums. Marking as paid removes them from this list.</p>
+      </div>
+
+      {totalActionable === 0 ? (
+        <div className="text-center bg-slate-50 border border-slate-200 rounded-xl py-12 px-4">
+          <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
+          <h3 className="text-lg font-medium text-slate-800">All caught up!</h3>
+          <p className="text-slate-500 mt-1">There are no upcoming premiums within the next 30 days.</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {renderSection("Overdue", categorized.overdue, "bg-red-50 text-red-800", <AlertCircle className="w-5 h-5 text-red-500" />, 0)}
+          {renderSection("10-Day Reminders (Critical)", categorized.tenDays, "bg-orange-50 text-orange-800", <Clock className="w-5 h-5 text-orange-500" />, 10)}
+          {renderSection("20-Day Reminders", categorized.twentyDays, "bg-yellow-50 text-yellow-800", <Clock className="w-5 h-5 text-yellow-500" />, 20)}
+          {renderSection("30-Day Reminders", categorized.thirtyDays, "bg-blue-50 text-blue-800", <Clock className="w-5 h-5 text-blue-500" />, 30)}
+        </div>
+      )}
+    </div>
+  )
+}

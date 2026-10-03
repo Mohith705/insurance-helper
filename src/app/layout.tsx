@@ -41,6 +41,12 @@ export default function RootLayout({
                   <Users className="h-5 w-5 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">Dashboard</span>
                 </Link>
+                <Link href="/reminders" className="flex items-center space-x-1 sm:space-x-2 text-slate-600 hover:text-indigo-600 font-medium transition-colors px-2 sm:px-3 py-2 rounded-md hover:bg-slate-50">
+                  <svg className="h-5 w-5 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="hidden sm:inline">Reminders</span>
+                </Link>
                 <Link href="/add-user" className="flex items-center space-x-1 sm:space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors px-3 sm:px-4 py-2 rounded-lg shadow-sm">
                   <UserPlus className="h-5 w-5 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">Add Client</span>
