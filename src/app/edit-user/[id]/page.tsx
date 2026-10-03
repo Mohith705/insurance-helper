@@ -11,7 +11,22 @@ export default async function EditUserPage({ params }: { params: { id: string } 
     .eq('id', params.id)
     .single()
 
-  if (error || !user) {
+  if (error) {
+    return (
+      <div className="p-8 text-center">
+        <h1 className="text-2xl font-bold text-red-600 mb-4">Database Error</h1>
+        <p className="text-gray-700 bg-red-50 p-4 rounded-lg inline-block text-left font-mono text-sm border border-red-200">
+          {error.message}
+          <br/><br/>
+          Details: {error.details || 'None'}
+          <br/>
+          Hint: {error.hint || 'None'}
+        </p>
+      </div>
+    )
+  }
+
+  if (!user) {
     return notFound()
   }
 
