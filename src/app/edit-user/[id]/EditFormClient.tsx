@@ -1,17 +1,18 @@
 'use client'
 
-import { useState } from 'react'
-import { addInsuranceUser } from '../actions'
+import { useState, useEffect, useRef } from 'react'
+import { updateInsuranceUser } from '../../actions'
 import { Save, AlertCircle, Plus, Trash2 } from 'lucide-react'
 
-export default function AddUserPage() {
+export default function EditFormClient({ initialData }: { initialData: any }) {
+  const formRef = useRef<HTMLFormElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [insuranceType, setInsuranceType] = useState('Life')
-  const [generalSubCategory, setGeneralSubCategory] = useState('Auto')
-  const [profession, setProfession] = useState('Job')
-  const [portability, setPortability] = useState('None')
-  const [existingInsurances, setExistingInsurances] = useState<{ company: string; premium: number; sum_insured: number; start_year: number; payment_term: string }[]>([])
+  const [insuranceType, setInsuranceType] = useState(initialData.insurance_type || 'Life')
+  const [generalSubCategory, setGeneralSubCategory] = useState(initialData.general_sub_category || 'Auto')
+  const [profession, setProfession] = useState(initialData.profession || 'Job')
+  const [portability, setPortability] = useState(initialData.health_portability_type || 'None')
+  const [existingInsurances, setExistingInsurances] = useState<{ company: string; premium: number; sum_insured: number; start_year: number; payment_term: string }[]>(initialData.existing_insurances || [])
 
   const addExistingInsurance = () => {
     setExistingInsurances([...existingInsurances, { company: '', premium: 0, sum_insured: 0, start_year: new Date().getFullYear(), payment_term: 'Monthly' }])
@@ -20,6 +21,67 @@ export default function AddUserPage() {
   const removeExistingInsurance = (index: number) => {
     setExistingInsurances(existingInsurances.filter((_, i) => i !== index))
   }
+
+  useEffect(() => {
+    if (!formRef.current || !initialData) return
+    const form = formRef.current
+    
+    const setVal = (name: string, value: any) => {
+      if (value === null || value === undefined) return
+      const el = form.elements.namedItem(name)
+      if (el) {
+        if (el instanceof RadioNodeList) {
+          // Handled by react state
+        } else {
+          (el as HTMLInputElement).value = value
+        }
+      }
+    }
+
+    setVal('first_name', initialData.first_name)
+    setVal('last_name', initialData.last_name)
+    setVal('insurance_company', initialData.insurance_company)
+    setVal('policy_name', initialData.policy_name)
+    setVal('policy_number', initialData.policy_number)
+    setVal('ssn_or_id', initialData.ssn_or_id)
+    setVal('phone_number', initialData.phone_number)
+    setVal('email', initialData.email)
+    setVal('address', initialData.address)
+    setVal('amount', initialData.amount)
+    setVal('previous_installment_date', initialData.previous_installment_date)
+    setVal('next_installment_date', initialData.next_installment_date)
+    setVal('payment_frequency', initialData.payment_frequency)
+    setVal('notes', initialData.notes)
+
+    setVal('aadhar_no', initialData.aadhar_no)
+    setVal('pan_card_no', initialData.pan_card_no)
+    setVal('height', initialData.height)
+    setVal('weight', initialData.weight)
+    setVal('health_issues', initialData.health_issues)
+    setVal('education', initialData.education)
+    setVal('bank_details', initialData.bank_details)
+    setVal('mother_name', initialData.mother_name)
+    setVal('designation', initialData.designation)
+    setVal('yearly_income', initialData.yearly_income)
+    setVal('mole', initialData.mole)
+    setVal('location', initialData.location)
+    
+    setVal('nominee_name', initialData.nominee_name)
+    setVal('nominee_dob', initialData.nominee_dob)
+    setVal('nominee_relation', initialData.nominee_relation)
+    setVal('nominee_place_of_birth', initialData.nominee_place_of_birth)
+    
+    setVal('auto_vehicle_type', initialData.auto_vehicle_type)
+    setVal('auto_make_model', initialData.auto_make_model)
+    setVal('auto_registration_no', initialData.auto_registration_no)
+    setVal('auto_mfg_year', initialData.auto_mfg_year)
+    setVal('auto_engine_no', initialData.auto_engine_no)
+    setVal('auto_chassis_no', initialData.auto_chassis_no)
+    setVal('auto_rto_code', initialData.auto_rto_code)
+    setVal('auto_idv', initialData.auto_idv)
+    setVal('auto_ncb', initialData.auto_ncb)
+    setVal('auto_purchase_location', initialData.auto_purchase_location)
+  }, [initialData])
 
   const updateExistingInsurance = (index: number, field: string, value: any) => {
     const updated = [...existingInsurances]
@@ -33,7 +95,7 @@ export default function AddUserPage() {
     try {
       // Append the existing insurances array as a JSON string
       formData.append('existing_insurances', JSON.stringify(existingInsurances))
-      await addInsuranceUser(formData)
+      await updateInsuranceUser(initialData.id, formData)
     } catch (err: any) {
       setError(err.message)
       setLoading(false)
@@ -43,8 +105,8 @@ export default function AddUserPage() {
   return (
     <div className="max-w-4xl mx-auto pb-12">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Add New Client</h1>
-        <p className="text-slate-500 mt-2">Enter the client details to onboard them into the CRM.</p>
+        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Edit Client</h1>
+        <p className="text-slate-500 mt-2">Update the client details. Major changes will be logged in their history timeline.</p>
       </div>
 
       {error && (
@@ -58,7 +120,7 @@ export default function AddUserPage() {
       )}
 
       <div className="bg-white shadow-sm border border-slate-200 rounded-2xl overflow-hidden">
-        <form action={handleSubmit} className="p-8 space-y-8">
+        <form ref={formRef} action={handleSubmit} className="p-8 space-y-8">
           
           {/* Section: Basic Info */}
           <div>
@@ -157,22 +219,14 @@ export default function AddUserPage() {
                           </select>
                         </div>
                         {portability !== 'None' && (
-                          <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
-                            <div className="md:col-span-3">
-                              <p className="text-xs font-semibold text-slate-500 uppercase">Previous Policy Details</p>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-slate-700 mb-1">Previous Company</label>
-                              <input name="prev_company" type="text" className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="e.g. Star Health" />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-slate-700 mb-1">Previous Policy Name</label>
-                              <input name="prev_policy_name" type="text" className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="e.g. Optima Restore" />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-slate-700 mb-1">Previous Policy No.</label>
-                              <input name="prev_policy_number" type="text" className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm uppercase" />
-                            </div>
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Portability Information</label>
+                            <textarea 
+                              name="health_portability_details" 
+                              rows={2} 
+                              placeholder="Enter previous policy company, policy number, or upgrade reasons..." 
+                              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
+                            />
                           </div>
                         )}
                       </div>
@@ -491,7 +545,7 @@ export default function AddUserPage() {
               className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium shadow-md transition-all disabled:opacity-70"
             >
               <Save className="w-5 h-5" />
-              <span>{loading ? 'Saving...' : 'Save Client'}</span>
+              <span>{loading ? 'Updating...' : 'Update Client'}</span>
             </button>
           </div>
         </form>

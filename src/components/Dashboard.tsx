@@ -2,14 +2,19 @@
 
 import { useState, useMemo } from 'react'
 import { InsuranceUser } from '@/types'
-import { Search, Filter, Lock, Unlock, Eye, X, Trash2, AlertTriangle } from 'lucide-react'
+import { Search, Filter, Lock, Unlock, Eye, X, Trash2, AlertTriangle, Edit } from 'lucide-react'
 import { format } from 'date-fns'
+import Link from 'next/link'
 import { deleteInsuranceUser } from '@/app/actions'
+import RemindersSection from './RemindersSection'
 
 export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUser[] }) {
   const [search, setSearch] = useState('')
   const [companyFilter, setCompanyFilter] = useState('All')
   const [selectedUser, setSelectedUser] = useState<InsuranceUser | null>(null)
+  
+  // Tab State
+  const [activeTab, setActiveTab] = useState<'Life' | 'General'>('Life')
 
   // Modal State
   const [passwordInput, setPasswordInput] = useState('')
@@ -22,14 +27,19 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
     return ['All', ...Array.from(set)]
   }, [initialUsers])
 
-  // Filter users based on search and dropdown
+  // Filter users based on search, dropdown, and tab
   const filteredUsers = useMemo(() => {
     return initialUsers.filter(user => {
+      // For now, if insurance_type is undefined on old data, assume it's 'Life'
+      const type = user.insurance_type || 'Life';
+      const matchTab = type === activeTab;
+      
       const matchSearch = `${user.first_name} ${user.last_name}`.toLowerCase().includes(search.toLowerCase())
       const matchCompany = companyFilter === 'All' || user.insurance_company === companyFilter
-      return matchSearch && matchCompany
+      
+      return matchTab && matchSearch && matchCompany
     })
-  }, [initialUsers, search, companyFilter])
+  }, [initialUsers, search, companyFilter, activeTab])
 
   // Modal handlers
   const openModal = (user: InsuranceUser) => {
@@ -92,7 +102,27 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Clients Dashboard</h1>
+      </div>
 
+      {/* Tabs */}
+      <div className="border-b border-slate-200">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab('Life')}
+            className={`${activeTab === 'Life' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+          >
+            Life
+          </button>
+          <button
+            onClick={() => setActiveTab('General')}
+            className={`${activeTab === 'General' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+          >
+            General
+          </button>
+        </nav>
+      </div>
+
+      <div className="space-y-6">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
           <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
@@ -115,11 +145,10 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
               {companies.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
-        </div>
-      </div>
+          </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        {/* Mobile View: Cards */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            {/* Mobile View: Cards */}
         <div className="block md:hidden divide-y divide-slate-200">
           {filteredUsers.length === 0 ? (
             <div className="p-8 text-center text-slate-500">No users found.</div>
@@ -141,6 +170,13 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                       <Eye className="w-4 h-4 mr-1.5" />
                       <span className="text-sm">View</span>
                     </button>
+                    <Link
+                      href={`/edit-user/${user.id}`}
+                      className="text-emerald-600 hover:text-emerald-800 font-medium flex items-center bg-emerald-50 hover:bg-emerald-100 p-2 rounded-lg transition-colors"
+                      title="Edit Client"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Link>
                     <button
                       onClick={() => openDeleteModal(user)}
                       className="text-red-600 hover:text-red-800 font-medium flex items-center bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors"
@@ -222,6 +258,13 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                           <Eye className="w-4 h-4" />
                           <span>View</span>
                         </button>
+                        <Link
+                          href={`/edit-user/${user.id}`}
+                          className="text-emerald-600 hover:text-emerald-800 font-medium flex items-center bg-emerald-50 hover:bg-emerald-100 p-2 rounded-lg transition-colors"
+                          title="Edit Client"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Link>
                         <button
                           onClick={() => openDeleteModal(user)}
                           className="text-red-600 hover:text-red-800 font-medium flex items-center bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors"
@@ -238,6 +281,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
           </table>
         </div>
       </div>
+    </div>
 
       {/* Modal */}
       {selectedUser && (
@@ -326,7 +370,188 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                       <p className="text-sm text-slate-500">Phone Number</p>
                       <p className="font-medium text-slate-800">{selectedUser.phone_number || 'N/A'}</p>
                     </div>
-                    <div className="md:col-span-2">
+                    
+                    {(selectedUser.insurance_type === 'Life' || (selectedUser.insurance_type === 'General' && selectedUser.general_sub_category === 'Health')) && (
+                      <>
+                        <div className="md:col-span-2 pt-4 mt-2 border-t border-slate-100">
+                          <h4 className="font-semibold text-slate-700 mb-4">{selectedUser.insurance_type === 'Life' ? 'Life' : 'Health'} Insurance specific</h4>
+                        </div>
+                        
+
+
+                        <div>
+                          <p className="text-sm text-slate-500">Aadhar No.</p>
+                          <p className="font-medium text-slate-800">{selectedUser.aadhar_no || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-500">PAN Card No.</p>
+                          <p className="font-medium text-slate-800">{selectedUser.pan_card_no || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-500">Height</p>
+                          <p className="font-medium text-slate-800">{selectedUser.height || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-500">Weight</p>
+                          <p className="font-medium text-slate-800">{selectedUser.weight || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-500">Education</p>
+                          <p className="font-medium text-slate-800">{selectedUser.education || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-500">Mother's Name</p>
+                          <p className="font-medium text-slate-800">{selectedUser.mother_name || 'N/A'}</p>
+                        </div>
+                        <div className="md:col-span-2">
+                          <p className="text-sm text-slate-500">Health Issues</p>
+                          <p className="font-medium text-slate-800">{selectedUser.health_issues || 'None'}</p>
+                        </div>
+                        <div className="md:col-span-2">
+                          <p className="text-sm text-slate-500">Bank Details</p>
+                          <p className="font-medium text-slate-800">{selectedUser.bank_details || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-500">Mole / Mark</p>
+                          <p className="font-medium text-slate-800">{selectedUser.mole || 'N/A'}</p>
+                        </div>
+                        
+                        {/* Profession */}
+                        <div className="md:col-span-2 bg-slate-50 p-4 rounded-lg mt-2">
+                          <h5 className="font-semibold text-slate-700 text-sm mb-3">Profession: {selectedUser.profession || 'N/A'}</h5>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-xs text-slate-500">Designation</p>
+                              <p className="font-medium text-slate-800 text-sm">{selectedUser.designation || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-slate-500">Location</p>
+                              <p className="font-medium text-slate-800 text-sm">{selectedUser.location || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-slate-500">Yearly Income</p>
+                              <p className="font-medium text-slate-800 text-sm">{selectedUser.yearly_income ? `₹${selectedUser.yearly_income}` : 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-slate-500">Document</p>
+                              {selectedUser.document_url ? (
+                                <a href={selectedUser.document_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm font-medium">View File</a>
+                              ) : (
+                                <p className="text-sm text-slate-500">No document</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Nominee */}
+                        <div className="md:col-span-2 bg-blue-50 p-4 rounded-lg mt-2">
+                          <h5 className="font-semibold text-blue-800 text-sm mb-3">Nominee Details</h5>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-xs text-blue-600/70">Name</p>
+                              <p className="font-medium text-blue-900 text-sm">{selectedUser.nominee_name || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-blue-600/70">Relation</p>
+                              <p className="font-medium text-blue-900 text-sm">{selectedUser.nominee_relation || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-blue-600/70">DOB</p>
+                              <p className="font-medium text-blue-900 text-sm">{selectedUser.nominee_dob ? format(new Date(selectedUser.nominee_dob), 'MMM d, yyyy') : 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-blue-600/70">Place of Birth</p>
+                              <p className="font-medium text-blue-900 text-sm">{selectedUser.nominee_place_of_birth || 'N/A'}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Existing Insurances */}
+                        {selectedUser.existing_insurances && selectedUser.existing_insurances.length > 0 && (
+                          <div className="md:col-span-2 mt-2">
+                            <h5 className="font-semibold text-slate-700 text-sm mb-3">Existing Policies</h5>
+                            <div className="space-y-3">
+                              {selectedUser.existing_insurances.map((ins, i) => (
+                                <div key={i} className="border border-slate-200 rounded p-3 text-sm flex justify-between bg-white">
+                                  <div>
+                                    <p className="font-bold text-slate-800">{ins.company}</p>
+                                    <p className="text-slate-500 text-xs">Term: {ins.payment_term} | Since: {ins.start_year}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="font-medium text-slate-800">Sum: ₹{ins.sum_insured}</p>
+                                    <p className="text-slate-500 text-xs">Premium: ₹{ins.premium}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {selectedUser.insurance_type === 'General' && selectedUser.general_sub_category === 'Auto' && (
+                      <>
+                        <div className="md:col-span-2 pt-4 mt-2 border-t border-slate-100">
+                          <h4 className="font-semibold text-slate-700 mb-4">Auto Insurance Details</h4>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-500">Vehicle Type</p>
+                          <p className="font-medium text-slate-800">{selectedUser.auto_vehicle_type || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-500">Make & Model</p>
+                          <p className="font-medium text-slate-800">{selectedUser.auto_make_model || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-500">Registration No (RC)</p>
+                          <p className="font-medium text-slate-800 uppercase">{selectedUser.auto_registration_no || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-500">Manufacturing Year</p>
+                          <p className="font-medium text-slate-800">{selectedUser.auto_mfg_year || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-500">Engine Number</p>
+                          <p className="font-medium text-slate-800 uppercase">{selectedUser.auto_engine_no || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-500">Chassis Number</p>
+                          <p className="font-medium text-slate-800 uppercase">{selectedUser.auto_chassis_no || 'N/A'}</p>
+                        </div>
+
+                        <div className="md:col-span-2 bg-slate-50 p-4 rounded-lg mt-2">
+                          <h5 className="font-semibold text-slate-700 text-sm mb-3">Policy & Values</h5>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-xs text-slate-500">RTO Code</p>
+                              <p className="font-medium text-slate-800 text-sm uppercase">{selectedUser.auto_rto_code || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-slate-500">Purchase Location</p>
+                              <p className="font-medium text-slate-800 text-sm">{selectedUser.auto_purchase_location || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-slate-500">IDV Value</p>
+                              <p className="font-medium text-slate-800 text-sm">{selectedUser.auto_idv ? `₹${selectedUser.auto_idv}` : 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-slate-500">Previous NCB</p>
+                              <p className="font-medium text-slate-800 text-sm">{selectedUser.auto_ncb ? `${selectedUser.auto_ncb}%` : 'N/A'}</p>
+                            </div>
+                            <div className="col-span-2">
+                              <p className="text-xs text-slate-500">Document</p>
+                              {selectedUser.document_url ? (
+                                <a href={selectedUser.document_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm font-medium">View RC/Policy Document</a>
+                              ) : (
+                                <p className="text-sm text-slate-500">No document</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    
+                    <div className="md:col-span-2 pt-4 mt-2 border-t border-slate-100">
                       <p className="text-sm text-slate-500">Full Address</p>
                       <p className="font-medium text-slate-800">{selectedUser.address || 'N/A'}</p>
                     </div>
@@ -334,6 +559,33 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                       <div className="md:col-span-2 bg-yellow-50 p-4 rounded-lg border border-yellow-100">
                         <p className="text-sm text-yellow-800 font-medium mb-1">Notes</p>
                         <p className="text-yellow-900">{selectedUser.notes}</p>
+                      </div>
+                    )}
+                    
+                    <RemindersSection user={selectedUser} />
+                    
+                    {selectedUser.history_logs && selectedUser.history_logs.length > 0 && (
+                      <div className="md:col-span-2 mt-4">
+                        <h4 className="font-semibold text-slate-700 mb-3 flex items-center">
+                          <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          History & Audit Trail
+                        </h4>
+                        <div className="space-y-3 relative before:absolute before:inset-0 before:ml-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
+                          {selectedUser.history_logs.map((log, index) => (
+                            <div key={index} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                              <div className="flex items-center justify-center w-5 h-5 rounded-full border border-white bg-blue-500 text-slate-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10" />
+                              <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] bg-white p-3 rounded border border-slate-100 shadow-sm">
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="font-bold text-slate-700 text-sm">{log.type}</div>
+                                  <time className="text-xs text-slate-500">{new Date(log.date).toLocaleDateString()}</time>
+                                </div>
+                                <div className="text-slate-600 text-sm">{log.message}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
