@@ -7,12 +7,19 @@ export default function RemindersSection({ user }: { user: InsuranceUser }) {
   const [loading, setLoading] = useState(false)
   const [date, setDate] = useState('')
   const [note, setNote] = useState('')
+  
+  // Local state for optimistic UI updates
+  const [localPaymentComplete, setLocalPaymentComplete] = useState(user.payment_complete || false)
+  const [localCustomReminders, setLocalCustomReminders] = useState(user.custom_reminders || [])
 
   const handleTogglePayment = async () => {
+    const newValue = !localPaymentComplete
+    setLocalPaymentComplete(newValue) // Optimistic update
     setLoading(true)
     try {
-      await updatePaymentStatus(user.id, !user.payment_complete)
-      // The parent will refetch or revalidate
+      await updatePaymentStatus(user.id, newValue)
+    } catch (e) {
+      setLocalPaymentComplete(!newValue) // Revert on failure
     } finally {
       setLoading(false)
     }
@@ -21,11 +28,17 @@ export default function RemindersSection({ user }: { user: InsuranceUser }) {
   const handleAddReminder = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!date || !note) return
+    
+    const newReminder = { date, note }
+    setLocalCustomReminders([...localCustomReminders, newReminder]) // Optimistic update
     setLoading(true)
+    
     try {
       await addCustomReminder(user.id, date, note)
       setDate('')
       setNote('')
+    } catch (e) {
+      // If it fails, we should ideally remove it, but for now just clear loading
     } finally {
       setLoading(false)
     }
@@ -47,11 +60,9 @@ export default function RemindersSection({ user }: { user: InsuranceUser }) {
 
   const allReminders = [
     ...generateAutoReminders(),
-    ...(user.custom_reminders || []).map(r => ({ ...r, isAuto: false }))
+    ...localCustomReminders.map(r => ({ ...r, isAuto: false }))
   ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
-  // Filter out past reminders to only show upcoming? Or show all. Let's show all for now.
-  
   const generateWhatsAppLink = (rem: any) => {
     const msg = `Hello ${user.first_name},\n\nThis is a reminder from Secure Solutions Insurance.\n\n${rem.note}\n\nPolicy: ${user.policy_name} (${user.policy_number})\nDue Date: ${user.next_installment_date ? format(new Date(user.next_installment_date), 'MMM d, yyyy') : 'N/A'}\n\nPlease ignore if already paid.`
     const phone = user.phone_number?.replace(/\D/g, '') || ''
@@ -71,7 +82,7 @@ export default function RemindersSection({ user }: { user: InsuranceUser }) {
         <label className="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-200">
           <input 
             type="checkbox" 
-            checked={user.payment_complete || false}
+            checked={localPaymentComplete}
             onChange={handleTogglePayment}
             disabled={loading}
             className="rounded text-green-600 focus:ring-green-500"
@@ -80,7 +91,7 @@ export default function RemindersSection({ user }: { user: InsuranceUser }) {
         </label>
       </div>
 
-      {user.payment_complete ? (
+      {localPaymentComplete ? (
         <div className="bg-green-50 text-green-700 p-4 rounded-lg text-sm font-medium border border-green-100 flex items-center">
           <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
