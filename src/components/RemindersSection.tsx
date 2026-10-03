@@ -102,7 +102,7 @@ export default function RemindersSection({ user }: { user: InsuranceUser }) {
         <div className="space-y-4">
           <div className="bg-white rounded-lg border border-slate-200 divide-y divide-slate-100">
             {allReminders.map((rem, idx) => (
-              <div key={idx} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+              <div key={idx} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-slate-50 transition-colors gap-3 sm:gap-0">
                 <div>
                   <p className="font-semibold text-slate-800 text-sm">
                     {format(new Date(rem.date), 'MMM d, yyyy')}
@@ -114,7 +114,7 @@ export default function RemindersSection({ user }: { user: InsuranceUser }) {
                   href={generateWhatsAppLink(rem)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1.5 rounded-lg flex items-center text-sm font-medium transition-colors whitespace-nowrap ml-4 shrink-0"
+                  className="bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1.5 rounded-lg flex items-center justify-center text-sm font-medium transition-colors whitespace-nowrap sm:ml-4 shrink-0"
                 >
                   WhatsApp
                 </a>
