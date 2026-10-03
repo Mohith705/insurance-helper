@@ -2,13 +2,14 @@ import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
 import EditFormClient from './EditFormClient'
 
-export default async function EditUserPage({ params }: { params: { id: string } }) {
+export default async function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
+  const resolvedParams = await params
 
   const { data: user, error } = await supabase
     .from('insurance_users')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', resolvedParams.id)
     .single()
 
   if (error) {
