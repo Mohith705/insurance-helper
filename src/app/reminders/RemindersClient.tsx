@@ -72,19 +72,19 @@ export default function RemindersClient({ users }: { users: InsuranceUser[] }) {
     if (items.length === 0) return null
 
     return (
-      <div className="mb-8 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+      <div className="mb-8 glass-card border border-slate-200 rounded-xl overflow-hidden shadow-sm">
         <div className={`px-6 py-4 border-b border-slate-100 flex items-center justify-between ${badgeColor}`}>
           <h2 className="text-lg font-semibold flex items-center text-slate-800">
             {icon}
             <span className="ml-2">{title}</span>
-            <span className="ml-3 bg-white/50 text-slate-700 text-xs font-bold px-2 py-0.5 rounded-full">{items.length}</span>
+            <span className="ml-3 glass-card/50 text-slate-700 text-xs font-bold px-2 py-0.5 rounded-full">{items.length}</span>
           </h2>
         </div>
         <div className="divide-y divide-slate-100">
           {items.map((item, idx) => {
             const { user, daysRemaining, note, date } = item
             return (
-            <div key={`${user.id}-${idx}`} className="p-6 flex flex-col md:flex-row md:items-center justify-between hover:bg-slate-50 transition-colors">
+            <div key={`${user.id}-${idx}`} className="p-6 flex flex-col md:flex-row md:items-center justify-between hover:bg-white/60 transition-colors">
               <div className="mb-4 md:mb-0">
                 <Link href={`/edit-user/${user.id}`} className="text-lg font-semibold text-slate-800 hover:text-blue-600 transition-colors">
                   {user.first_name} {user.last_name}
@@ -142,7 +142,7 @@ export default function RemindersClient({ users }: { users: InsuranceUser[] }) {
       </div>
 
       {totalActionable === 0 ? (
-        <div className="text-center bg-slate-50 border border-slate-200 rounded-xl py-12 px-4">
+        <div className="text-center bg-white/60 border border-slate-200 rounded-xl py-12 px-4">
           <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
           <h3 className="text-lg font-medium text-slate-800">All caught up!</h3>
           <p className="text-slate-500 mt-1">There are no upcoming premiums within the next 30 days.</p>

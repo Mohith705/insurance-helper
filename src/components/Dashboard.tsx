@@ -140,21 +140,21 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
             <select
               value={companyFilter}
               onChange={(e) => setCompanyFilter(e.target.value)}
-              className="pl-9 pr-8 py-2.5 sm:py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none appearance-none bg-white w-full sm:w-auto"
+              className="pl-9 pr-8 py-2.5 sm:py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none appearance-none glass-card w-full sm:w-auto"
             >
               {companies.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="glass-card rounded-2xl overflow-hidden animate-fade-in-up border border-white/50">
             {/* Mobile View: Cards */}
         <div className="block md:hidden divide-y divide-slate-200">
           {filteredUsers.length === 0 ? (
             <div className="p-8 text-center text-slate-500">No users found.</div>
           ) : (
             filteredUsers.map(user => (
-              <div key={user.id} className="p-5 hover:bg-slate-50 transition-colors">
+              <div key={user.id} className="p-5 hover:bg-slate-50/50 transition-colors">
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <h3 className="font-bold text-slate-800 text-lg leading-tight">{user.first_name} {user.last_name}</h3>
@@ -187,11 +187,11 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                  <div className="bg-slate-50/50 p-3 rounded-lg border border-slate-100">
                     <p className="text-slate-500 text-[11px] uppercase tracking-wider font-semibold mb-1">Policy</p>
                     <p className="font-medium text-slate-700">{user.policy_name}</p>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                  <div className="bg-slate-50/50 p-3 rounded-lg border border-slate-100">
                     <p className="text-slate-500 text-[11px] uppercase tracking-wider font-semibold mb-1">Amount</p>
                     <p className="font-medium text-slate-700">₹{user.amount}</p>
                   </div>
@@ -211,7 +211,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-sm font-medium text-slate-500 uppercase tracking-wider">
+              <tr className="bg-slate-50/50 border-b border-slate-200 text-sm font-medium text-slate-500 uppercase tracking-wider">
                 <th className="px-3 py-4 whitespace-nowrap">Name</th>
                 <th className="px-3 py-4 whitespace-nowrap">Company</th>
                 <th className="px-3 py-4">Policy</th>
@@ -230,7 +230,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                 </tr>
               ) : (
                 filteredUsers.map(user => (
-                  <tr key={user.id} className="hover:bg-slate-50 transition-colors group">
+                  <tr key={user.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-3 py-4 font-medium text-slate-800 whitespace-nowrap">
                       {user.first_name} {user.last_name}
                     </td>
@@ -286,10 +286,10 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
       {/* Modal */}
       {selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="glass-card rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+            <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
               <h2 className="text-xl font-bold text-slate-800 flex items-center">
                 {selectedUser.first_name} {selectedUser.last_name}
                 {isAuthenticated ? (
@@ -329,7 +329,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
               </div>
 
               {!isAuthenticated ? (
-                <div className="bg-slate-50 rounded-xl p-8 border border-slate-200 text-center">
+                <div className="bg-slate-50/50 rounded-xl p-8 border border-slate-200 text-center">
                   <Lock className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-slate-800 mb-2">Confidential Data Protected</h3>
                   <p className="text-slate-500 mb-6 text-sm">Please enter the security password to view sensitive client information like SSN, Policy Number, and Contact Details.</p>
@@ -417,7 +417,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                         </div>
                         
                         {/* Profession */}
-                        <div className="md:col-span-2 bg-slate-50 p-4 rounded-lg mt-2">
+                        <div className="md:col-span-2 bg-slate-50/50 p-4 rounded-lg mt-2">
                           <h5 className="font-semibold text-slate-700 text-sm mb-3">Profession: {selectedUser.profession || 'N/A'}</h5>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -472,7 +472,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                             <h5 className="font-semibold text-slate-700 text-sm mb-3">Existing Policies</h5>
                             <div className="space-y-3">
                               {selectedUser.existing_insurances.map((ins, i) => (
-                                <div key={i} className="border border-slate-200 rounded p-3 text-sm flex justify-between bg-white">
+                                <div key={i} className="border border-slate-200 rounded p-3 text-sm flex justify-between glass-card">
                                   <div>
                                     <p className="font-bold text-slate-800">{ins.company}</p>
                                     <p className="text-slate-500 text-xs">Term: {ins.payment_term} | Since: {ins.start_year}</p>
@@ -519,7 +519,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                           <p className="font-medium text-slate-800 uppercase">{selectedUser.auto_chassis_no || 'N/A'}</p>
                         </div>
 
-                        <div className="md:col-span-2 bg-slate-50 p-4 rounded-lg mt-2">
+                        <div className="md:col-span-2 bg-slate-50/50 p-4 rounded-lg mt-2">
                           <h5 className="font-semibold text-slate-700 text-sm mb-3">Policy & Values</h5>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -576,7 +576,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                           {selectedUser.history_logs.map((log, index) => (
                             <div key={index} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                               <div className="flex items-center justify-center w-5 h-5 rounded-full border border-white bg-blue-500 text-slate-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10" />
-                              <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] bg-white p-3 rounded border border-slate-100 shadow-sm">
+                              <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] glass-card p-3 rounded border border-slate-100 shadow-sm">
                                 <div className="flex items-center justify-between mb-1">
                                   <div className="font-bold text-slate-700 text-sm">{log.type}</div>
                                   <time className="text-xs text-slate-500">{new Date(log.date).toLocaleDateString()}</time>
@@ -599,7 +599,7 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
       {/* Delete Modal */}
       {userToDelete && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
+          <div className="glass-card rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
             <div className="px-6 py-4 border-b border-red-100 flex justify-between items-center bg-red-50">
               <h2 className="text-xl font-bold text-red-700 flex items-center">
                 <AlertTriangle className="w-5 h-5 mr-2" />
