@@ -27,8 +27,8 @@ export default function RemindersClient({ users }: { users: InsuranceUser[] }) {
     }
   }
 
-  const generateWhatsAppLink = (user: InsuranceUser, days: number) => {
-    const note = `Automatic Reminder: ${days} days until next premium of ₹${user.amount}`
+  const generateWhatsAppLink = (user: InsuranceUser, days: number, customNote?: string) => {
+    const note = customNote || `Automatic Reminder: ${days} days until next premium of ₹${user.amount}`
     const msg = `Hello ${user.first_name},\n\nThis is a reminder from Secure Solutions Insurance.\n\n${note}\n\nPolicy: ${user.policy_name} (${user.policy_number})\nDue Date: ${user.next_installment_date ? format(new Date(user.next_installment_date), 'MMM d, yyyy') : 'N/A'}\nPremium Amount: ₹${user.amount}\n\nPlease ignore if already paid.`
     const phone = user.phone_number?.replace(/\D/g, '') || ''
     return `https://wa.me/91${phone.slice(-10)}?text=${encodeURIComponent(msg)}`
@@ -36,28 +36,39 @@ export default function RemindersClient({ users }: { users: InsuranceUser[] }) {
 
   // Categorize users based on days remaining
   const categorized = activeUsers.reduce((acc, user) => {
-    if (!user.next_installment_date) return acc
-    
-    const daysRemaining = differenceInDays(new Date(user.next_installment_date), new Date())
-    
-    if (daysRemaining < 0) {
-      acc.overdue.push({ user, daysRemaining })
-    } else if (daysRemaining <= 10) {
-      acc.tenDays.push({ user, daysRemaining })
-    } else if (daysRemaining <= 20) {
-      acc.twentyDays.push({ user, daysRemaining })
-    } else if (daysRemaining <= 30) {
-      acc.thirtyDays.push({ user, daysRemaining })
+    if (user.next_installment_date) {
+      const daysRemaining = differenceInDays(new Date(user.next_installment_date), new Date())
+      
+      if (daysRemaining < 0) {
+        acc.overdue.push({ user, daysRemaining })
+      } else if (daysRemaining <= 10) {
+        acc.tenDays.push({ user, daysRemaining })
+      } else if (daysRemaining <= 20) {
+        acc.twentyDays.push({ user, daysRemaining })
+      } else if (daysRemaining <= 30) {
+        acc.thirtyDays.push({ user, daysRemaining })
+      }
     }
+
+    if (user.custom_reminders && Array.isArray(user.custom_reminders)) {
+      user.custom_reminders.forEach((rem: any) => {
+        const customDaysRemaining = differenceInDays(new Date(rem.date), new Date())
+        if (customDaysRemaining <= 14) { // Due within 14 days or overdue
+          acc.custom.push({ user, daysRemaining: customDaysRemaining, note: rem.note, date: rem.date })
+        }
+      })
+    }
+
     return acc
   }, {
     overdue: [] as { user: InsuranceUser, daysRemaining: number }[],
     tenDays: [] as { user: InsuranceUser, daysRemaining: number }[],
     twentyDays: [] as { user: InsuranceUser, daysRemaining: number }[],
-    thirtyDays: [] as { user: InsuranceUser, daysRemaining: number }[]
+    thirtyDays: [] as { user: InsuranceUser, daysRemaining: number }[],
+    custom: [] as { user: InsuranceUser, daysRemaining: number, note: string, date: string }[]
   })
 
-  const renderSection = (title: string, items: { user: InsuranceUser, daysRemaining: number }[], badgeColor: string, icon: React.ReactNode, daysRef: number) => {
+  const renderSection = (title: string, items: any[], badgeColor: string, icon: React.ReactNode, isCustom = false) => {
     if (items.length === 0) return null
 
     return (
@@ -70,12 +81,19 @@ export default function RemindersClient({ users }: { users: InsuranceUser[] }) {
           </h2>
         </div>
         <div className="divide-y divide-slate-100">
-          {items.map(({ user, daysRemaining }) => (
-            <div key={user.id} className="p-6 flex flex-col md:flex-row md:items-center justify-between hover:bg-slate-50 transition-colors">
+          {items.map((item, idx) => {
+            const { user, daysRemaining, note, date } = item
+            return (
+            <div key={`${user.id}-${idx}`} className="p-6 flex flex-col md:flex-row md:items-center justify-between hover:bg-slate-50 transition-colors">
               <div className="mb-4 md:mb-0">
                 <Link href={`/edit-user/${user.id}`} className="text-lg font-semibold text-slate-800 hover:text-blue-600 transition-colors">
                   {user.first_name} {user.last_name}
                 </Link>
+                {isCustom && (
+                  <p className="text-sm font-medium text-purple-700 mt-1 bg-purple-50 inline-block px-2 py-0.5 rounded border border-purple-100">
+                    Custom Note: {note} (Set for {format(new Date(date), 'MMM d, yyyy')})
+                  </p>
+                )}
                 <div className="text-sm text-slate-500 mt-1 flex flex-wrap items-center gap-2">
                   <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600">{user.policy_name}</span>
                   <span>•</span>
@@ -87,7 +105,7 @@ export default function RemindersClient({ users }: { users: InsuranceUser[] }) {
               
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
                 <a
-                  href={generateWhatsAppLink(user, daysRef)}
+                  href={generateWhatsAppLink(user, isCustom ? daysRemaining : (daysRemaining > 20 ? 30 : daysRemaining > 10 ? 20 : 10), isCustom ? note : undefined)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center justify-center"
@@ -104,13 +122,14 @@ export default function RemindersClient({ users }: { users: InsuranceUser[] }) {
                 </button>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     )
   }
 
-  const totalActionable = categorized.overdue.length + categorized.tenDays.length + categorized.twentyDays.length + categorized.thirtyDays.length
+  const totalActionable = categorized.overdue.length + categorized.tenDays.length + categorized.twentyDays.length + categorized.thirtyDays.length + categorized.custom.length
 
   return (
     <div>
@@ -130,10 +149,11 @@ export default function RemindersClient({ users }: { users: InsuranceUser[] }) {
         </div>
       ) : (
         <div className="space-y-6">
-          {renderSection("Overdue", categorized.overdue, "bg-red-50 text-red-800", <AlertCircle className="w-5 h-5 text-red-500" />, 0)}
-          {renderSection("10-Day Reminders (Critical)", categorized.tenDays, "bg-orange-50 text-orange-800", <Clock className="w-5 h-5 text-orange-500" />, 10)}
-          {renderSection("20-Day Reminders", categorized.twentyDays, "bg-yellow-50 text-yellow-800", <Clock className="w-5 h-5 text-yellow-500" />, 20)}
-          {renderSection("30-Day Reminders", categorized.thirtyDays, "bg-blue-50 text-blue-800", <Clock className="w-5 h-5 text-blue-500" />, 30)}
+          {renderSection("Custom Reminders", categorized.custom, "bg-purple-50 text-purple-800", <AlertCircle className="w-5 h-5 text-purple-500" />, true)}
+          {renderSection("Overdue", categorized.overdue, "bg-red-50 text-red-800", <AlertCircle className="w-5 h-5 text-red-500" />)}
+          {renderSection("10-Day Reminders (Critical)", categorized.tenDays, "bg-orange-50 text-orange-800", <Clock className="w-5 h-5 text-orange-500" />)}
+          {renderSection("20-Day Reminders", categorized.twentyDays, "bg-yellow-50 text-yellow-800", <Clock className="w-5 h-5 text-yellow-500" />)}
+          {renderSection("30-Day Reminders", categorized.thirtyDays, "bg-blue-50 text-blue-800", <Clock className="w-5 h-5 text-blue-500" />)}
         </div>
       )}
     </div>
