@@ -231,7 +231,7 @@ export default function AddUserPage() {
                     <label className="block text-sm font-medium text-slate-700 mb-2">Life Insured Place of Birth</label>
                     <input name="life_insured_place_of_birth" type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
                   </div>
-                  <div className="md:col-span-2 grid grid-cols-2 gap-6">
+                  <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Height</label>
                     <input name="height" type="text" placeholder="e.g. 5'10" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
