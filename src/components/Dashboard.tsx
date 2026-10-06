@@ -487,10 +487,6 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                               <p className="text-xs text-blue-600/70">DOB</p>
                               <p className="font-medium text-blue-900 text-sm">{selectedUser.nominee_dob ? format(new Date(selectedUser.nominee_dob), 'MMM d, yyyy') : 'N/A'}</p>
                             </div>
-                            <div>
-                              <p className="text-xs text-blue-600/70">Place of Birth</p>
-                              <p className="font-medium text-blue-900 text-sm">{selectedUser.nominee_place_of_birth || 'N/A'}</p>
-                            </div>
                           </div>
                         </div>
 

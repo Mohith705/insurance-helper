@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-function calculateNextInstallmentDate(prevDateStr, frequency) {
+function calculateNextInstallmentDate(prevDateStr: string | null, frequency: string) {
   if (!prevDateStr) return null;
   const date = new Date(prevDateStr);
   if (isNaN(date.getTime())) return prevDateStr;
@@ -79,6 +79,8 @@ export async function addInsuranceUser(formData: FormData) {
     existing_insurances: formData.get('existing_insurances') ? JSON.parse(formData.get('existing_insurances') as string) : [],
     
     document_url: null as string | null,
+    aadhar_document_url: null as string | null,
+    pan_document_url: null as string | null,
 
     // General Sub-Category
     general_sub_category: formData.get('general_sub_category') as string || null,

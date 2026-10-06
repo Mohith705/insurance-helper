@@ -356,8 +356,6 @@ export default function EditFormClient({ initialData }: { initialData: any }) {
                       <input type="file" name="document_file" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
                     </div>
                   </div>
-
-                    </div>
                   </div>
                   </div>
                   {/* Existing Insurances */}
@@ -406,7 +404,6 @@ export default function EditFormClient({ initialData }: { initialData: any }) {
                     )}
                   </div>
                 </div>
-              </div>
               <hr className="border-slate-100" />
             </>
           )}

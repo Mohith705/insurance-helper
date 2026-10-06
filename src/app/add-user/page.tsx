@@ -296,7 +296,6 @@ export default function AddUserPage() {
                     </div>
                     </div>
                   </div>
-                  </div>
 
                   {/* Existing Insurances */}
                   <div className="md:col-span-2 mt-4">
