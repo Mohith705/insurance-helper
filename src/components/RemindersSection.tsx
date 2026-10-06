@@ -64,7 +64,7 @@ export default function RemindersSection({ user }: { user: InsuranceUser }) {
   ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
   const generateWhatsAppLink = (rem: any) => {
-    const msg = `Hello ${user.first_name},\n\nThis is a reminder from your insurance agent.\n\n${rem.note}\n\nPolicy: ${user.policy_name} (${user.policy_number})\nDue Date: ${user.next_installment_date ? format(new Date(user.next_installment_date), 'MMM d, yyyy') : 'N/A'}\nPremium Amount: ₹${user.amount}\n\nPlease ignore if already paid.`
+    const msg = `Hello ${user.first_name},\n\nThis is a reminder from your insurance agent.\n\n${rem.note}\n\nCompany: ${user.insurance_company}\nPolicy: ${user.policy_name} (${user.policy_number})\nDue Date: ${user.next_installment_date ? format(new Date(user.next_installment_date), 'MMM d, yyyy') : 'N/A'}\n\nPlease ignore if already paid.`
     const phone = user.phone_number?.replace(/\D/g, '') || ''
     return `https://wa.me/91${phone.slice(-10)}?text=${encodeURIComponent(msg)}`
   }

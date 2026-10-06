@@ -4,6 +4,24 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+function calculateNextInstallmentDate(prevDateStr, frequency) {
+  if (!prevDateStr) return null;
+  const date = new Date(prevDateStr);
+  if (isNaN(date.getTime())) return prevDateStr;
+  
+  if (frequency === 'Monthly') {
+    date.setMonth(date.getMonth() + 1);
+  } else if (frequency === 'Quarterly') {
+    date.setMonth(date.getMonth() + 3);
+  } else if (frequency === 'Half Yearly') {
+    date.setMonth(date.getMonth() + 6);
+  } else if (frequency === 'Yearly') {
+    date.setFullYear(date.getFullYear() + 1);
+  }
+  return date.toISOString().split('T')[0];
+}
+
+
 export async function addInsuranceUser(formData: FormData) {
   const supabase = await createClient()
 
@@ -17,7 +35,7 @@ export async function addInsuranceUser(formData: FormData) {
     policy_name: formData.get('policy_name') as string,
     amount: parseFloat(formData.get('amount') as string),
     previous_installment_date: prevDate ? prevDate : null,
-    next_installment_date: formData.get('next_installment_date') as string,
+    next_installment_date: calculateNextInstallmentDate(prevDate ? prevDate : (formData.get('date_of_commencement') as string), formData.get('payment_frequency') as string) || (formData.get('next_installment_date') as string),
     payment_frequency: formData.get('payment_frequency') as string,
     policy_number: formData.get('policy_number') as string,
     ssn_or_id: formData.get('ssn_or_id') as string,
@@ -27,6 +45,16 @@ export async function addInsuranceUser(formData: FormData) {
     notes: formData.get('notes') as string,
     
     // New Life Insurance Fields
+    
+    client_id: formData.get('client_id') as string || null,
+    date_of_commencement: formData.get('date_of_commencement') as string || null,
+    policy_status: formData.get('policy_status') as string || null,
+    premium_paying_term: formData.get('premium_paying_term') ? parseInt(formData.get('premium_paying_term') as string) : null,
+    policy_period: formData.get('policy_period') ? parseInt(formData.get('policy_period') as string) : null,
+    base_sum_assured: formData.get('base_sum_assured') ? parseFloat(formData.get('base_sum_assured') as string) : null,
+    accidental_sum_assured: formData.get('accidental_sum_assured') ? parseFloat(formData.get('accidental_sum_assured') as string) : null,
+    total_sum_assured: formData.get('total_sum_assured') ? parseFloat(formData.get('total_sum_assured') as string) : null,
+    life_insured_place_of_birth: formData.get('life_insured_place_of_birth') as string || null,
     aadhar_no: formData.get('aadhar_no') as string || null,
     pan_card_no: formData.get('pan_card_no') as string || null,
     height: formData.get('height') as string || null,
@@ -45,7 +73,7 @@ export async function addInsuranceUser(formData: FormData) {
     nominee_name: formData.get('nominee_name') as string || null,
     nominee_dob: formData.get('nominee_dob') as string || null,
     nominee_relation: formData.get('nominee_relation') as string || null,
-    nominee_place_of_birth: formData.get('nominee_place_of_birth') as string || null,
+    
     
     // JSON arrays
     existing_insurances: formData.get('existing_insurances') ? JSON.parse(formData.get('existing_insurances') as string) : [],
@@ -70,6 +98,27 @@ export async function addInsuranceUser(formData: FormData) {
     auto_idv: formData.get('auto_idv') ? parseFloat(formData.get('auto_idv') as string) : null,
     auto_ncb: formData.get('auto_ncb') as string || null,
     auto_purchase_location: formData.get('auto_purchase_location') as string || null,
+  }
+
+
+  const aadharFile = formData.get('aadhar_document') as File;
+  if (aadharFile && aadharFile.size > 0) {
+    const fileExt = aadharFile.name.split('.').pop()
+    const fileName = `${data.policy_number}-aadhar-${Date.now()}.${fileExt}`
+    const { error: uploadError } = await supabase.storage.from('documents').upload(fileName, aadharFile)
+    if (!uploadError) {
+      data.aadhar_document_url = supabase.storage.from('documents').getPublicUrl(fileName).data.publicUrl
+    }
+  }
+
+  const panFile = formData.get('pan_document') as File;
+  if (panFile && panFile.size > 0) {
+    const fileExt = panFile.name.split('.').pop()
+    const fileName = `${data.policy_number}-pan-${Date.now()}.${fileExt}`
+    const { error: uploadError } = await supabase.storage.from('documents').upload(fileName, panFile)
+    if (!uploadError) {
+      data.pan_document_url = supabase.storage.from('documents').getPublicUrl(fileName).data.publicUrl
+    }
   }
 
   // Handle file upload if present

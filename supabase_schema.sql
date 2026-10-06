@@ -88,3 +88,24 @@ create policy "Enable delete access for all users" on public.insurance_users for
 ALTER TABLE public.insurance_users
 ADD COLUMN payment_complete BOOLEAN DEFAULT false,
 ADD COLUMN custom_reminders JSONB DEFAULT '[]'::jsonb;
+
+-- Schema modifications for the new requirements:
+ALTER TABLE public.insurance_users 
+ADD COLUMN premium_paying_term integer,
+ADD COLUMN policy_period integer,
+ADD COLUMN client_id text,
+ADD COLUMN date_of_commencement date,
+ADD COLUMN policy_status text,
+ADD COLUMN base_sum_assured numeric(12, 2),
+ADD COLUMN accidental_sum_assured numeric(12, 2),
+ADD COLUMN total_sum_assured numeric(12, 2),
+ADD COLUMN life_insured_place_of_birth text,
+ADD COLUMN aadhar_document_url text,
+ADD COLUMN pan_document_url text;
+
+-- Change payment_frequency enum
+ALTER TABLE public.insurance_users DROP CONSTRAINT IF EXISTS insurance_users_payment_frequency_check;
+ALTER TABLE public.insurance_users ADD CONSTRAINT insurance_users_payment_frequency_check CHECK (payment_frequency in ('Monthly', 'Quarterly', 'Half Yearly', 'Yearly'));
+
+-- Remove nominee_place_of_birth
+ALTER TABLE public.insurance_users DROP COLUMN IF EXISTS nominee_place_of_birth;

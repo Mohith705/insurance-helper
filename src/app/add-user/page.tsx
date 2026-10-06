@@ -12,6 +12,8 @@ export default function AddUserPage() {
   const [profession, setProfession] = useState('Job')
   const [portability, setPortability] = useState('None')
   const [existingInsurances, setExistingInsurances] = useState<{ company: string; premium: number; sum_insured: number; start_year: number; payment_term: string }[]>([])
+  const [baseSum, setBaseSum] = useState<number>(0)
+  const [accidentalSum, setAccidentalSum] = useState<number>(0)
 
   const addExistingInsurance = () => {
     setExistingInsurances([...existingInsurances, { company: '', premium: 0, sum_insured: 0, start_year: new Date().getFullYear(), payment_term: 'Monthly' }])
@@ -124,6 +126,38 @@ export default function AddUserPage() {
                 <label className="block text-sm font-medium text-slate-700 mb-2">Policy Number (Confidential)</label>
                 <input required name="policy_number" type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="POL-123456789" />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Client ID</label>
+                <input name="client_id" type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="CLI-1234" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Date of Commencement</label>
+                <input name="date_of_commencement" type="date" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Policy Status</label>
+                <input name="policy_status" type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Active, Grace, Lapsed..." />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Premium Paying Term (Years)</label>
+                <input name="premium_paying_term" type="number" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. 10" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Policy Period (Years)</label>
+                <input name="policy_period" type="number" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. 20" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Base Sum Assured</label>
+                <input name="base_sum_assured" type="number" value={baseSum || ''} onChange={(e) => setBaseSum(Number(e.target.value))} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. 500000" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Accidental Sum Assured</label>
+                <input name="accidental_sum_assured" type="number" value={accidentalSum || ''} onChange={(e) => setAccidentalSum(Number(e.target.value))} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. 500000" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Total Sum Assured</label>
+                <input name="total_sum_assured" type="number" value={baseSum + accidentalSum || ''} readOnly className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-50 focus:outline-none" />
+              </div>
             </div>
           </div>
 
@@ -181,14 +215,23 @@ export default function AddUserPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Aadhar No.</label>
-                    <input name="aadhar_no" type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                    <input name="aadhar_no" type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none mb-2" />
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Upload Aadhar (Both Sides)</label>
+                    <input type="file" name="aadhar_document" className="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">PAN Card No.</label>
-                    <input name="pan_card_no" type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                    <input name="pan_card_no" type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none mb-2" />
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Upload PAN</label>
+                    <input type="file" name="pan_document" className="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                   </div>
                   
                   {/* Health / Personal Details */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Life Insured Place of Birth</label>
+                    <input name="life_insured_place_of_birth" type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div className="md:col-span-2 grid grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Height</label>
                     <input name="height" type="text" placeholder="e.g. 5'10" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
@@ -251,29 +294,8 @@ export default function AddUserPage() {
                       </label>
                       <input type="file" name="document_file" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
                     </div>
-                  </div>
-
-                  {/* Nominee Details */}
-                  <div className="md:col-span-2 mt-2">
-                    <h3 className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-2">Nominee Details</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
-                        <input name="nominee_name" type="text" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Date of Birth</label>
-                        <input name="nominee_dob" type="date" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Relation</label>
-                        <input name="nominee_relation" type="text" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Place of Birth</label>
-                        <input name="nominee_place_of_birth" type="text" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-                      </div>
                     </div>
+                  </div>
                   </div>
 
                   {/* Existing Insurances */}
@@ -465,6 +487,7 @@ export default function AddUserPage() {
                 <select required name="payment_frequency" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white">
                   <option value="Monthly">Monthly</option>
                   <option value="Quarterly">Quarterly</option>
+                  <option value="Half Yearly">Half Yearly</option>
                   <option value="Yearly">Yearly</option>
                 </select>
               </div>
@@ -473,8 +496,34 @@ export default function AddUserPage() {
                 <input name="previous_installment_date" type="date" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Next Installment Date</label>
-                <input required name="next_installment_date" type="date" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
+                <label className="block text-sm font-medium text-slate-700 mb-2">Next Installment Date (Optional)</label>
+                <input name="next_installment_date" type="date" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
+              </div>
+            </div>
+          </div>
+          
+          <hr className="border-slate-100" />
+
+          {/* Nominee Details */}
+          <div>
+            <h2 className="text-xl font-semibold text-slate-800 mb-4 flex items-center">
+              <span className="bg-blue-100 text-blue-700 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">
+                {insuranceType === 'Life' ? '5' : '4'}
+              </span>
+              Nominee Details
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Nominee Name</label>
+                <input name="nominee_name" type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Date of Birth</label>
+                <input name="nominee_dob" type="date" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Relation with Insured</label>
+                <input name="nominee_relation" type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
             </div>
           </div>

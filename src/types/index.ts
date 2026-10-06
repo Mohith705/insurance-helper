@@ -9,8 +9,14 @@ export interface InsuranceUser {
   amount: number;
   previous_installment_date: string | null;
   next_installment_date: string;
-  payment_frequency: 'Monthly' | 'Quarterly' | 'Yearly';
+  payment_frequency: 'Monthly' | 'Quarterly' | 'Half Yearly' | 'Yearly';
   policy_number: string;
+  client_id: string | null;
+  date_of_commencement: string | null;
+  policy_status: string | null;
+  base_sum_assured: number | null;
+  accidental_sum_assured: number | null;
+  total_sum_assured: number | null;
   ssn_or_id: string | null;
   phone_number: string | null;
   email: string | null;
@@ -19,7 +25,9 @@ export interface InsuranceUser {
   
   // New Life Insurance Fields (Confidential)
   aadhar_no: string | null;
+  aadhar_document_url: string | null;
   pan_card_no: string | null;
+  pan_document_url: string | null;
   existing_insurances: { company: string; premium: number; sum_insured: number; start_year: number; payment_term: string }[] | null;
   height: string | null;
   weight: string | null;
@@ -32,12 +40,14 @@ export interface InsuranceUser {
   yearly_income: number | null;
   mole: string | null;
   location: string | null;
+  life_insured_place_of_birth: string | null;
+  premium_paying_term: number | null;
+  policy_period: number | null;
   
   // Nominee Details
   nominee_name: string | null;
   nominee_dob: string | null;
   nominee_relation: string | null;
-  nominee_place_of_birth: string | null;
   
   // Document Upload
   document_url: string | null;

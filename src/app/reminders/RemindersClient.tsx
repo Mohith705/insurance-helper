@@ -29,7 +29,7 @@ export default function RemindersClient({ users }: { users: InsuranceUser[] }) {
 
   const generateWhatsAppLink = (user: InsuranceUser, days: number, customNote?: string) => {
     const note = customNote || `Automatic Reminder: ${days} days until next premium of ₹${user.amount}`
-    const msg = `Hello ${user.first_name},\n\nThis is a reminder from your insurance agent.\n\n${note}\n\nPolicy: ${user.policy_name} (${user.policy_number})\nDue Date: ${user.next_installment_date ? format(new Date(user.next_installment_date), 'MMM d, yyyy') : 'N/A'}\nPremium Amount: ₹${user.amount}\n\nPlease ignore if already paid.`
+    const msg = `Hello ${user.first_name},\n\nThis is a reminder from your insurance agent.\n\n${note}\n\nCompany: ${user.insurance_company}\nPolicy: ${user.policy_name} (${user.policy_number})\nDue Date: ${user.next_installment_date ? format(new Date(user.next_installment_date), 'MMM d, yyyy') : 'N/A'}\n\nPlease ignore if already paid.`
     const phone = user.phone_number?.replace(/\D/g, '') || ''
     return `https://wa.me/91${phone.slice(-10)}?text=${encodeURIComponent(msg)}`
   }
