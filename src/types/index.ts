@@ -26,6 +26,7 @@ export interface InsuranceUser {
   // New Life Insurance Fields (Confidential)
   aadhar_no: string | null;
   aadhar_document_url: string | null;
+  aadhar_back_document_url: string | null;
   pan_card_no: string | null;
   pan_document_url: string | null;
   existing_insurances: { company: string; premium: number; sum_insured: number; start_year: number; payment_term: string }[] | null;

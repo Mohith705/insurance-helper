@@ -80,6 +80,7 @@ export async function addInsuranceUser(formData: FormData) {
     
     document_url: null as string | null,
     aadhar_document_url: null as string | null,
+    aadhar_back_document_url: null as string | null,
     pan_document_url: null as string | null,
 
     // General Sub-Category
@@ -106,10 +107,20 @@ export async function addInsuranceUser(formData: FormData) {
   const aadharFile = formData.get('aadhar_document') as File;
   if (aadharFile && aadharFile.size > 0) {
     const fileExt = aadharFile.name.split('.').pop()
-    const fileName = `${data.policy_number}-aadhar-${Date.now()}.${fileExt}`
+    const fileName = `${data.policy_number}-aadhar-front-${Date.now()}.${fileExt}`
     const { error: uploadError } = await supabase.storage.from('documents').upload(fileName, aadharFile)
     if (!uploadError) {
       data.aadhar_document_url = supabase.storage.from('documents').getPublicUrl(fileName).data.publicUrl
+    }
+  }
+
+  const aadharBackFile = formData.get('aadhar_back_document') as File;
+  if (aadharBackFile && aadharBackFile.size > 0) {
+    const fileExt = aadharBackFile.name.split('.').pop()
+    const fileName = `${data.policy_number}-aadhar-back-${Date.now()}.${fileExt}`
+    const { error: uploadError } = await supabase.storage.from('documents').upload(fileName, aadharBackFile)
+    if (!uploadError) {
+      data.aadhar_back_document_url = supabase.storage.from('documents').getPublicUrl(fileName).data.publicUrl
     }
   }
 
@@ -267,6 +278,9 @@ export async function updateInsuranceUser(id: string, formData: FormData) {
     auto_purchase_location: formData.get('auto_purchase_location') as string || null,
     
     document_url: oldUser.document_url,
+    aadhar_document_url: oldUser.aadhar_document_url,
+    aadhar_back_document_url: oldUser.aadhar_back_document_url,
+    pan_document_url: oldUser.pan_document_url,
   }
 
   const documentFile = formData.get('document_file') as File;
@@ -282,6 +296,36 @@ export async function updateInsuranceUser(id: string, formData: FormData) {
     if (!uploadError) {
       const { data: { publicUrl } } = supabase.storage.from('documents').getPublicUrl(fileName)
       data.document_url = publicUrl
+    }
+  }
+
+  const aadharFile = formData.get('aadhar_document') as File;
+  if (aadharFile && aadharFile.size > 0) {
+    const fileExt = aadharFile.name.split('.').pop()
+    const fileName = `${data.policy_number}-aadhar-front-${Date.now()}.${fileExt}`
+    const { error: uploadError } = await supabase.storage.from('documents').upload(fileName, aadharFile)
+    if (!uploadError) {
+      data.aadhar_document_url = supabase.storage.from('documents').getPublicUrl(fileName).data.publicUrl
+    }
+  }
+
+  const aadharBackFile = formData.get('aadhar_back_document') as File;
+  if (aadharBackFile && aadharBackFile.size > 0) {
+    const fileExt = aadharBackFile.name.split('.').pop()
+    const fileName = `${data.policy_number}-aadhar-back-${Date.now()}.${fileExt}`
+    const { error: uploadError } = await supabase.storage.from('documents').upload(fileName, aadharBackFile)
+    if (!uploadError) {
+      data.aadhar_back_document_url = supabase.storage.from('documents').getPublicUrl(fileName).data.publicUrl
+    }
+  }
+
+  const panFile = formData.get('pan_document') as File;
+  if (panFile && panFile.size > 0) {
+    const fileExt = panFile.name.split('.').pop()
+    const fileName = `${data.policy_number}-pan-${Date.now()}.${fileExt}`
+    const { error: uploadError } = await supabase.storage.from('documents').upload(fileName, panFile)
+    if (!uploadError) {
+      data.pan_document_url = supabase.storage.from('documents').getPublicUrl(fileName).data.publicUrl
     }
   }
 

@@ -410,10 +410,23 @@ export default function Dashboard({ initialUsers }: { initialUsers: InsuranceUse
                         <div>
                           <p className="text-sm text-slate-500">Aadhar No.</p>
                           <p className="font-medium text-slate-800">{selectedUser.aadhar_no || 'N/A'}</p>
+                          {(selectedUser.aadhar_document_url || selectedUser.aadhar_back_document_url) && (
+                            <div className="flex space-x-3 mt-1">
+                              {selectedUser.aadhar_document_url && (
+                                <a href={selectedUser.aadhar_document_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs font-medium">View Front</a>
+                              )}
+                              {selectedUser.aadhar_back_document_url && (
+                                <a href={selectedUser.aadhar_back_document_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs font-medium">View Back</a>
+                              )}
+                            </div>
+                          )}
                         </div>
                         <div>
                           <p className="text-sm text-slate-500">PAN Card No.</p>
                           <p className="font-medium text-slate-800">{selectedUser.pan_card_no || 'N/A'}</p>
+                          {selectedUser.pan_document_url && (
+                            <a href={selectedUser.pan_document_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs font-medium block mt-1">View PAN</a>
+                          )}
                         </div>
                         <div>
                           <p className="text-sm text-slate-500">Height</p>

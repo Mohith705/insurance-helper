@@ -277,8 +277,16 @@ export default function EditFormClient({ initialData }: { initialData: any }) {
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Aadhar No.</label>
                     <input name="aadhar_no" type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none mb-2" />
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Upload Aadhar (Both Sides)</label>
-                    <input type="file" name="aadhar_document" className="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Upload Front Side</label>
+                        <input type="file" name="aadhar_document" className="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Upload Back Side</label>
+                        <input type="file" name="aadhar_back_document" className="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                      </div>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">PAN Card No.</label>
